@@ -81,9 +81,12 @@ function Login() {
 
                     {/* Register*/}
                     <div className="text-center mt-4">
-                        <a href="#register" className="font-semibold text-black hover:underline">
-                            Register
-                        </a>
+                    <button
+                        onClick={() => navigate("/register")}
+                        className="font-semibold text-black hover:underline"
+                    >
+                        Register
+                    </button>
                     </div>
                 </div>
             </div>

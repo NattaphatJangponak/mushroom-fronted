@@ -1,103 +1,148 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ManagePotModal from '../components/ManagePotModal';
 
 function PotSelectionPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [showImage, setShowImage] = useState(false);
-
-    // get query parameter  URL 
     const searchParams = new URLSearchParams(location.search);
-    const rowId = searchParams.get('row') || "1"; // Default เป็น "1"
+
+    const rowId = searchParams.get('row') || "1";
+    const initialRowStatus = searchParams.get('status') || "Available";
+
+    let storedPots;
+    try {
+        storedPots = JSON.parse(searchParams.get('pots')) || [];
+    } catch (error) {
+        storedPots = [];
+    }
+
+    const [showImage, setShowImage] = useState(false);
+    const [isModalOpen, setIsManagePotOpen] = useState(false);
+    const [potData, setPotData] = useState(
+        storedPots.length > 0
+            ? storedPots
+            : [...Array(12).keys()].map((num) => ({
+                id: String(num + 1).padStart(2, '0'),
+                rowPot: `${rowId}:${String(num + 1).padStart(2, '0')}`,
+                status: initialRowStatus,
+                potStatus: "Safe"
+            }))
+    );
+
+    // ✅ เปลี่ยนค่าเฉพาะ Pot ที่เลือก
+    const handleUpdatePotStatus = (potId, newPotStatus) => {
+        setPotData(potData.map(pot =>
+            pot.id === potId ? { ...pot, potStatus: newPotStatus } : pot
+        ));
+    };
+
+    // ✅ เปลี่ยนค่าเฉพาะ `Row Status` โดยไม่เปลี่ยน `potStatus`
+    const handleUpdateRowStatus = (newRowStatus) => {
+        setPotData(potData.map(pot => ({
+            ...pot,
+            status: newRowStatus
+        })));
+    };
+
+    // ✅ ฟังก์ชันสำหรับปุ่ม SAVE CHANGES
+    const handleSaveChanges = () => {
+        navigate(`/rowselection?updatedRow=${rowId}&status=${potData[0]?.status || "Available"}&pots=${encodeURIComponent(JSON.stringify(potData))}`);
+    };
+
+    // ✅ เมื่อกด `Pot` ให้ไปที่ `Status Mushroom`
+    const handleCheckMushroomStatus = (potId) => {
+        navigate(`/application?row=${rowId}&pot=${potId}`);
+    };
 
     return (
         <div className="bg-gray-50 min-h-screen p-8">
-            {/* Header */}
-            <h2 className="text-4xl font-bold mx-10 my-4 ">Pot Selection for Row {rowId}</h2>
-
-            {/* Layout Grid */}
+            <h2 className="text-4xl font-bold mx-10 my-4">Pot Selection for Row {rowId}</h2>
+            <button
+                onClick={() => setIsManagePotOpen(true)}
+                className="mb-6 bg-blue-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-600"
+            >
+                Manage Pot
+            </button>
             <div className="grid grid-cols-12 gap-6">
-                {/* Grid for Pot */}
                 <div className="col-span-8 grid grid-cols-4 gap-4">
-                    {[...Array(16).keys()].map((num) => (
-                        <div
-                            key={num}
-                            onClick={() => alert(`Selected Pot ${num + 1} in Row ${rowId}`)}
-                            className="border rounded-lg text-center p-8 cursor-pointer hover:bg-gray-200 transition shadow-md"
-                        >
-                            <p className="font-bold text-xl">{String(num + 1).padStart(2, '0')}</p>
+                    {potData.length > 0 ? potData.map((pot) => (
+                        <div key={pot.id} className="border rounded-lg p-6 shadow-md">
+                            {/* ✅ คลิกที่ Pot เพื่อนำไปเช็ค Status Mushroom */}
+                            <button
+                                className="block w-full text-left"
+                                onClick={() => handleCheckMushroomStatus(pot.id)}
+                            >
+                                <p className="font-bold text-xl">{pot.id}</p>
+                                <p className="text-sm text-gray-500">{pot.status}</p>
+                            </button>
+
+                            {/* ✅ Dropdown แยกออกมา ไม่ให้กดซ้อนกัน */}
+                            <div className="mt-3">
+                                <label className="block text-sm text-gray-500">Pot Status</label>
+                                <select
+                                    value={pot.potStatus}
+                                    onChange={(e) => handleUpdatePotStatus(pot.id, e.target.value)}
+                                    className={`w-full border px-3 py-2 rounded-md text-sm font-semibold
+                                        ${pot.potStatus === "Danger" ? "text-red-500" :
+                                            pot.potStatus === "Warning" ? "text-yellow-500" :
+                                                "text-green-500"
+                                        }`}
+                                >
+                                    <option value="Safe">Safe</option>
+                                    <option value="Warning">Warning</option>
+                                    <option value="Danger">Danger</option>
+                                </select>
+                            </div>
                         </div>
-                    ))}
+                    )) : <p className="col-span-4 text-center text-gray-500">No pots available</p>}
                 </div>
 
                 {/* Sidebar Card */}
                 <div className="col-span-4">
                     <div className="bg-white border border-gray-300 shadow-md rounded-lg p-6">
-                        {/* ID Section */}
-                        {/* Input ID */}
-
-
-
+                        {/* Row Status Dropdown */}
                         <div className="mb-4">
-                            <div className="group w-full max-w-md mx-auto">
-                                {/* Label */}
-                                <label
-                                    htmlFor="ID"
-                                    className="block text-sm font-medium text-gray-500 mb-2 transition-all duration-200 ease-in-out group-focus-within:text-blue-400"
-                                >
-                                    ID
-                                </label>
-
-                                {/* Input Group */}
-                                <div className="relative flex items-center">
-                                    {/* SVG Icon */}
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 448 512"
-                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
-                                    >
-                                        <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
-                                    </svg>
-
-                                    {/* Input */}
-                                    <input
-                                        id="ID"
-                                        type="text"
-                                        placeholder="Enter ID"
-                                        value={`0${rowId}`}
-                                        readOnly
-                                        className="w-full h-12 pl-10 pr-4 rounded-md bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700"
-                                    />
-                                </div>
-                            </div>
+                            <label className="block text-sm font-medium text-gray-500 mb-2">Row Status</label>
+                            <select
+                                value={potData[0]?.status || "Available"}
+                                onChange={(e) => handleUpdateRowStatus(e.target.value)}
+                                className="w-full h-12 px-4 rounded-md bg-gray-50 border border-gray-300 text-gray-700"
+                            >
+                                <option value="Available">Available</option>
+                                <option value="In Use">In Use</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-500 mb-2">ID</label>
+                            <input
+                                type="text"
+                                value={`0${rowId}`}
+                                readOnly
+                                className="w-full h-12 px-4 rounded-md bg-gray-50 border border-gray-300 text-gray-700"
+                            />
                         </div>
 
-
-                        {/* Buttons */}
                         <div className="space-y-4">
-                            <button
-                                className="bt-card"
-                                onClick={() => setShowImage(true)}
-                            >
-                                Show Img
-                            </button>
-                            <button
-                                className="bt-card"
-                                onClick={() => navigate('/application')}
-                            >
-                                Status Mashroom
-                            </button>
+                            <button className="bt-card" onClick={() => setShowImage(prev => !prev)}>Toggle Img</button>
+                            <button className="bt-card" onClick={handleSaveChanges}>Save Changes Status Pot</button>
                         </div>
 
-                        {/* Show Image */}
                         {showImage && (
                             <div className="mt-6 flex justify-center">
-                                <img
-                                    src="/Image/mushroomex.png"
-                                    alt="Mushroom"
-                                    className="w-40 h-40 border-4 border-gray-200 rounded-md"
-                                />
+                                <img src="/Image/realmush.png" alt="Mushroom" className="w-40 h-40 border-4 border-gray-200 rounded-md" />
                             </div>
+                        )}
+                        {/* ✅ เรียกใช้ Modal */}
+                        {isModalOpen && (
+                            <ManagePotModal
+                                isOpen={isModalOpen}
+                                onClose={() => setIsManagePotOpen(false)}
+                                potData={potData}
+                                setPotData={setPotData}
+                                rowId={rowId}
+                            />
                         )}
                     </div>
                 </div>
@@ -107,5 +152,3 @@ function PotSelectionPage() {
 }
 
 export default PotSelectionPage;
-
-

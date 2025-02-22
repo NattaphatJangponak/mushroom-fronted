@@ -9,7 +9,7 @@ import Application from '../pages/Application';
 import RowSelectionPage from '../pages/RowSelectionPage';
 import PotSelectionPage from '../pages/PotSelectionPage';
 
-
+import Materdata from '../pages/Materdata';
 // router
 const AppRouter = () => {
     return (
@@ -22,6 +22,7 @@ const AppRouter = () => {
             <Route path="/application" element={<Application />} />
             <Route path="/rowselection" element={<RowSelectionPage/>}/> 
             <Route path="/potselection" element={<PotSelectionPage />} />
+            <Route path="/masterdata" element={<Materdata />} />
         </Routes>
     );
 };
