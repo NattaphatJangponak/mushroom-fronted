@@ -9,7 +9,7 @@ import Application from '../pages/Application';
 import RowSelectionPage from '../pages/RowSelectionPage';
 import PotSelectionPage from '../pages/PotSelectionPage';
 
-import Materdata from '../pages/Materdata';
+import ManageMushroom from '../pages/ManageMushroom';
 // router
 const AppRouter = () => {
     return (
@@ -22,7 +22,7 @@ const AppRouter = () => {
             <Route path="/application" element={<Application />} />
             <Route path="/rowselection" element={<RowSelectionPage/>}/> 
             <Route path="/potselection" element={<PotSelectionPage />} />
-            <Route path="/masterdata" element={<Materdata />} />
+            <Route path="/managemushroom" element={<ManageMushroom />} />
         </Routes>
     );
 };

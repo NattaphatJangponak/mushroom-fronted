@@ -34,7 +34,7 @@ const Navbar = () => {
                     <a href="/rowselection" className="nav-link">APPLICATION</a>
                 </li>
                 <li className="mx-2">
-                    <a href="/masterdata" className="nav-link">MASTER DATA</a>
+                    <a href="/managemushroom" className="nav-link">Manage Mushroom</a>
                 </li>
             </ul>
                {/* Right Section */}
