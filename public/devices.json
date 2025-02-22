@@ -1,0 +1,8 @@
+[
+    { "device_id": "D001", "device_name": "D001 - Humidity Sensor" },
+    { "device_id": "D002", "device_name": "D001 - Temperature Sensor" },
+    { "device_id": "D003", "device_name": "D001 - CO2 Sensor" },
+    { "device_id": "D004", "device_name": "D001 - Light Control" },
+    { "device_id": "D005", "device_name": "D001 - Water Pump" }
+  ]
+  
