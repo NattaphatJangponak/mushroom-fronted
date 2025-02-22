@@ -1,15 +1,18 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route } from "react-router-dom";
 
 // import pages
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import HomePage from '../pages/Homepage';
-import SystemOverView from '../pages/SystemOverView';
-import Application from '../pages/Application';
-import RowSelectionPage from '../pages/RowSelectionPage';
-import PotSelectionPage from '../pages/PotSelectionPage';
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import HomePage from "../pages/Homepage";
+import SystemOverView from "../pages/SystemOverView";
+import Application from "../pages/Application";
+import RowSelectionPage from "../pages/RowSelectionPage";
+import PotSelectionPage from "../pages/PotSelectionPage";
 
-import ManageMushroom from '../pages/ManageMushroom';
+import Materdata from "../pages/Materdata";
+import Cultivation from "../pages/Cultivation.JSX";
+import Growing from "../pages/Growing";
+import ViewCultivation from "../pages/ViewCultivation";
 // router
 const AppRouter = () => {
     return (
@@ -22,7 +25,7 @@ const AppRouter = () => {
             <Route path="/application" element={<Application />} />
             <Route path="/rowselection" element={<RowSelectionPage/>}/> 
             <Route path="/potselection" element={<PotSelectionPage />} />
-            <Route path="/managemushroom" element={<ManageMushroom />} />
+            <Route path="/masterdata" element={<Materdata />} />
         </Routes>
     );
 };
