@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ChangeNameModal from "../components/ChangeNameModal";
 import { useNavigate } from "react-router-dom";
+
 const Navbar = () => {
   const navigate = useNavigate();
   const today = new Date();
@@ -11,15 +12,18 @@ const Navbar = () => {
       year: "numeric",
     })
     .replace(/ /g, "");
+
   const [isChangeNameModalOpen, setIsChangeNameModalOpen] = useState(false);
+  const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
 
   // ✅ fn Logout
   const handleLogout = () => {
-    localStorage.removeItem("userToken"); // dele Token in Local Storage
-    navigate("/login"); // backto Login
+    localStorage.removeItem("userToken"); // Delete Token in Local Storage
+    navigate("/login"); // Redirect to Login
   };
+
   return (
-    <nav className="nav-bar">
+    <nav className="nav-bar relative">
       <div className="flex items-center">
         <img
           src="/Image/mushroom.png"
@@ -45,11 +49,54 @@ const Navbar = () => {
             APPLICATION
           </a>
         </li>
-        <li className="mx-2">
-          <a href="/masterdata" className="nav-link">
+
+        {/* Master Data with Dropdown */}
+        <li className="mx-2 font-title relative group">
+          <button
+            className="hover:text-white-500 transition flex items-center "
+          >
             MASTER DATA
-          </a>
+            <svg
+              className="w-3 h-3 fill-gray-500 group-hover:fill-black-500 transition"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+            >
+              <path d="M10 2.586 11.414 4 6 9.414.586 4 2 2.586l4 4z" />
+            </svg>
+          </button>
+
+          {/* Dropdown Menu */}
+          <ul className="absolute left-0 mt-2 min-w-[240px] bg-gray-500 border border-gray-800 p-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100 transition duration-200">
+            <li>
+              <a
+                href="/farmtype"
+                className="flex items-center p-2 hover:bg-gray-800 transition"
+              >
+                <span className="ml-3">Farm Type</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="/typemushrooms"
+                className="flex items-center p-2 hover:bg-gray-800 transition"
+              >
+                <span className="ml-3">Type Mushroom</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="/device"
+                className="flex items-center p-2 hover:bg-gray-800 transition"
+              >
+                <span className="ml-3">Device</span>
+              </a>
+            </li>
+          </ul>
         </li>
+
+
         <li className="mx-2">
           <a href="/mushroom-cultivation" className="nav-link">
             CULTIVATION
@@ -61,6 +108,7 @@ const Navbar = () => {
           </a>
         </li>
       </ul>
+
       {/* Right Section */}
       <div className="flex items-center space-x-5">
         <p className="font-title">{date}</p>
@@ -87,6 +135,7 @@ const Navbar = () => {
           Logout
         </button>
       </div>
+
       {/* Modals */}
       {isChangeNameModalOpen && (
         <ChangeNameModal
