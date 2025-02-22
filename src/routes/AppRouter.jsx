@@ -12,6 +12,7 @@ import PotSelectionPage from "../pages/PotSelectionPage";
 import Cultivation from "../pages/Cultivation.JSX";
 import Growing from "../pages/Growing";
 import ViewCultivation from "../pages/ViewCultivation";
+import ViewGrowing from "../pages/ViewGrowing";
 // router
 const AppRouter = () => {
   return (
@@ -27,7 +28,7 @@ const AppRouter = () => {
       <Route path="/mushroom-cultivation" element={<Cultivation />} />
       <Route path="/mushroom-cultivation/view/" element={<ViewCultivation />} />
       <Route path="/mushroom-growing" element={<Growing />} />
-
+      <Route path="/mushroom-growing/view/" element={<ViewGrowing />} />
     </Routes>
   );
 };
