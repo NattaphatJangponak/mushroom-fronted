@@ -7,7 +7,7 @@ import axios from "axios";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { useNavigate } from "react-router-dom";
 
-const ViewCultivation = () => {
+const ViewGrowing = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const deviceId = searchParams.get("device_id");
@@ -204,4 +204,4 @@ const ViewCultivation = () => {
   );
 };
 
-export default ViewCultivation;
+export default ViewGrowing;
