@@ -9,7 +9,7 @@ import Application from "../pages/Application";
 import RowSelectionPage from "../pages/RowSelectionPage";
 import PotSelectionPage from "../pages/PotSelectionPage";
 
-import MasterData from "../pages/MasterData";
+ 
 import FarmType from "../pages/FarmType";
 import TypeMushrooms from "../pages/TypeMushrooms";
 import Device from "../pages/Device";
@@ -30,7 +30,7 @@ const AppRouter = () => {
       <Route path="/application" element={<Application />} />
       <Route path="/rowselection" element={<RowSelectionPage />} />
       <Route path="/potselection" element={<PotSelectionPage />} />
-      <Route path="/masterdata" element={<MasterData />} />
+       
       <Route path="/farmtype" element={<FarmType />} />      
       <Route path="/typemushrooms" element={<TypeMushrooms/>} />
       <Route path="/device" element={<Device />} />

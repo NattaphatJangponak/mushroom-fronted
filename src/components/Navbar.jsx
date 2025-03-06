@@ -44,11 +44,11 @@ const Navbar = () => {
           </a>
         </li>
 
-        <li className="mx-2">
+        {/* <li className="mx-2">
           <a href="/rowselection" className="nav-link">
             APPLICATION
           </a>
-        </li>
+        </li> */}
 
         {/* Master Data with Dropdown */}
         <li className="mx-2 font-title relative group">
@@ -57,7 +57,7 @@ const Navbar = () => {
           >
             MASTER DATA
             <svg
-              className="w-3 h-3 fill-gray-500 group-hover:fill-black-500 transition"
+              className="w-3 h-3 fill-gray-50 group-hover:fill-black-500 transition"
               xmlns="http://www.w3.org/2000/svg"
               width="12"
               height="12"
@@ -97,15 +97,43 @@ const Navbar = () => {
         </li>
 
 
-        <li className="mx-2">
-          <a href="/mushroom-cultivation" className="nav-link">
-            CULTIVATION
-          </a>
-        </li>
-        <li className="mx-2">
-          <a href="/mushroom-growing" className="nav-link">
-            GROWING
-          </a>
+        {/* Master Data with Dropdown */}
+        <li className="mx-2 font-title relative group">
+          <button
+            className="hover:text-white-500 transition flex items-center "
+          >
+            TYPEDATA 
+            <svg
+              className="w-3 h-3 fill-gray-50 group-hover:fill-black-500 transition"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+            >
+              <path d="M10 2.586 11.414 4 6 9.414.586 4 2 2.586l4 4z" />
+            </svg>
+          </button>
+
+          {/* Dropdown Menu */}
+          <ul className="absolute left-0 mt-2 min-w-[240px] bg-gray-500 border border-gray-800 p-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100 transition duration-200">
+            <li>
+              <a
+                href="/mushroom-cultivation"
+                className="flex items-center p-2 hover:bg-gray-800 transition"
+              >
+                <span className="ml-3">CULTIVATION</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="/mushroom-growing"
+                className="flex items-center p-2 hover:bg-gray-800 transition"
+              >
+                <span className="ml-3">GROWING</span>
+              </a>
+            </li>
+
+          </ul>
         </li>
       </ul>
 

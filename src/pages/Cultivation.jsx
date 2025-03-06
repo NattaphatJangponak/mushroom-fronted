@@ -24,30 +24,35 @@ const Cultivation = () => {
 
   const navigate = useNavigate();
 
+
   useEffect(() => {
+
     const fetchData = async () => {
       try {
         const [devicesRes, farmsRes, cultivationRes] = await Promise.all([
-          axios.get("./devices.json"),
-          axios.get("./farms.json"),
-          axios.get("./cultivation_data.json"),
+          axios.get("http://localhost:5000/api/device"),
+          axios.get("http://localhost:5000/api/farm"),
+          axios.get("http://localhost:5000/api/cultivation")
         ]);
 
-        setDevices(devicesRes.data || []);
-        setFarms(farmsRes.data || []);
+        console.log("Devices API Response:", devicesRes.data);
+        console.log("Farms API Response:", farmsRes.data);
+        console.log("Cultivation API Response:", cultivationRes.data);
 
-        // Map `device_id` to `device_name` before setting items
-        const deviceMap = devicesRes.data.reduce(
-          (acc, { device_id, device_name }) => {
-            acc[device_id] = device_name;
-            return acc;
-          },
-          {}
-        );
+        setDevices(devicesRes.data.data || []);
 
-        const mappedItems = cultivationRes.data.map((item) => ({
+        setFarms(farmsRes.data.data || []);
+
+        const deviceMap = devicesRes.data.data.reduce((acc, { device_id, device_name }) => {
+          acc[device_id] = device_name;
+          return acc;
+        }, {});
+
+        const mappedItems = cultivationRes.data.data.map((item) => ({
           ...item,
+
           device_name: deviceMap[item.device_id] || "Unknown Device",
+          mushroom_farm_name: farmsRes.data.data.find(f => f.farm_id === item.farm_id)?.farm_name || "Unknown Farm"
         }));
 
         setItems(mappedItems);
@@ -58,37 +63,93 @@ const Cultivation = () => {
     fetchData();
   }, []);
 
-  const handleAddEdit = () => {
-    setItems((prevItems) =>
-      form.id
-        ? prevItems.map((item) => (item.id === form.id ? form : item))
-        : [...prevItems, { ...form, id: Date.now() }]
-    );
-    closeModal();
+  useEffect(() => {
+    if (!form.device_name && devices.length > 0) {
+      setForm((prev) => ({ ...prev, device_name: devices[0].device_name }));
+    }
+    if (!form.mushroom_farm_name && farms.length > 0) {
+      setForm((prev) => ({ ...prev, mushroom_farm_name: farms[0].farm_name }));
+    }
+  }, [devices, farms]); // ✅ ทำงานเมื่อ devices หรือ farms เปลี่ยน
+
+  const handleAddEdit = async () => {
+    try {
+      if (!form.device_name || !form.mushroom_farm_name) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      const data = {
+        device_id: devices.find((d) => d.device_name === form.device_name)?.device_id,
+        farm_id: farms.find((f) => f.farm_name === form.mushroom_farm_name)?.farm_id
+      };
+
+      console.log("🔹 Data being sent:", data);
+      let response;
+      if (form.id) {
+        console.log("🔹 Editing cultivation with ID:", form.id);
+        response = await axios.put(`http://localhost:5000/api/cultivation/${form.id}`, data);
+      } else {
+        response = await axios.post("http://localhost:5000/api/cultivation", data);
+      }
+
+      console.log("✅ API Response:", response.data);
+
+      if (response.data.success === true) {
+
+        const updatedResponse = await axios.get("http://localhost:5000/api/cultivation");
+        setItems(updatedResponse.data.data);
+        closeModal();
+        window.location.reload();
+      }
+
+    } catch (error) {
+      console.error("❌ Error saving cultivation:", error.response?.data || error.message);
+    }
   };
 
+
   const handleEdit = (item) => {
-    setForm(item);
+    setForm({
+      id: item.cultivation_id,  // ✅ ใช้ `cultivation_id` เป็น `id`
+      device_name: item.device_name,
+      mushroom_farm_name: item.mushroom_farm_name
+    });
     setModal(true);
   };
 
-  const handleDelete = (id) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  console.log(items)
+  const handleDelete = async (id) => {
+
+    try {
+      await axios.delete(`http://localhost:5000/api/cultivation/${id}`);
+      setItems((prevItems) => prevItems.filter((item) => item.cultivation_id !== id));
+    } catch (error) {
+      console.error("Error deleting cultivation:", error);
+    }
   };
+
 
   const closeModal = () => {
     setModal(false);
     setForm({ id: null, device_name: "", mushroom_farm_name: "" });
   };
 
-  const filteredItems = items.filter(
-    ({ device_name, mushroom_farm_name }) =>
+  const filteredItems = items.filter(({ device_name, mushroom_farm_name }) => {
+    const safeDeviceName = device_name ? device_name.toLowerCase() : "";  // ✅ ตรวจสอบก่อนใช้
+    const safeFarmName = mushroom_farm_name ? mushroom_farm_name.toLowerCase() : ""; // ✅ ตรวจสอบก่อนใช้
+
+    return (
       (selectedFarm === "" ||
         selectedFarm === "All Farms" ||
         mushroom_farm_name === selectedFarm) &&
-      (device_name.toLowerCase().includes(search.toLowerCase()) ||
-        mushroom_farm_name.toLowerCase().includes(search.toLowerCase()))
-  );
+      (safeDeviceName.includes(search.toLowerCase()) ||
+        safeFarmName.includes(search.toLowerCase()))
+    );
+  });
+  // console.log("🔍 Filtered Items:", filteredItems); // ✅ Debug ข้อมูลหลัง Filter
+
+  // console.log( form); // ✅ Debug ค่า search และ selectedFarm
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen flex flex-col items-center">
@@ -138,9 +199,9 @@ const Cultivation = () => {
           </thead>
           <tbody>
             {filteredItems.map(
-              ({ id, device_id, device_name, mushroom_farm_name }) => (
-                <tr key={id} className="border-t">
-                  <td className="p-3">{id}</td>
+              ({ cultivation_id, device_name, mushroom_farm_name}) => (
+                <tr key={cultivation_id} className="border-t">
+                  <td className="p-3">{cultivation_id}</td>
                   <td className="p-3">{device_name}</td>
                   <td className="p-3">{mushroom_farm_name}</td>
                   <td className="p-3 text-center">
@@ -148,27 +209,27 @@ const Cultivation = () => {
                       <button
                         className="bg-blue-500 text-white p-2 rounded-lg shadow hover:bg-blue-600 transition"
                         onClick={() =>
-                          handleEdit({ id, device_name, mushroom_farm_name })
+                          handleEdit({ cultivation_id, device_name, mushroom_farm_name })
                         }
                       >
                         <PencilIcon className="w-5 h-5" />
                       </button>
                       <button
                         className="bg-red-500 text-white p-2 rounded-lg shadow hover:bg-red-600 transition"
-                        onClick={() => handleDelete(id)}
+                        onClick={() => handleDelete(cultivation_id)}
                       >
                         <TrashIcon className="w-5 h-5" />
                       </button>
                       <button
                         className="bg-green-500 text-white p-2 rounded-lg shadow hover:bg-green-600 transition"
                         onClick={() =>
-                          navigate(
-                            `/mushroom-cultivation/view/?device_id=${device_id}`
-                          )
+                          navigate(`/mushroom-cultivation/view/?cultivation_id=${cultivation_id}&device_name=${device_name}`)
                         }
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
+
+
                     </div>
                   </td>
                 </tr>
@@ -195,7 +256,7 @@ const Cultivation = () => {
 
             <select
               className="w-full p-2 border rounded mb-3"
-              value={form.device_name}
+              value={form.device_name || (devices.length > 0 ? devices[0].device_name : "")} // ✅ ตั้งค่า default เป็นตัวแรก
               onChange={(e) =>
                 setForm({ ...form, device_name: e.target.value })
               }
@@ -209,7 +270,7 @@ const Cultivation = () => {
 
             <select
               className="w-full p-2 border rounded mb-3"
-              value={form.mushroom_farm_name}
+              value={form.mushroom_farm_name || (farms.length > 0 ? farms[0].farm_name : "")} // ✅ ตั้งค่า default เป็นตัวแรก
               onChange={(e) =>
                 setForm({ ...form, mushroom_farm_name: e.target.value })
               }

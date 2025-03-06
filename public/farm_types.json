@@ -1,4 +1,5 @@
 [
-    { "type_id": "T001", "type_name": "Organic Farm" },
-    { "type_id": "T002", "type_name": "Hydroponic Farm" }
+    { "type_id": "T001", "type_name": "โรงปลูก" },
+    { "type_id": "T002", "type_name": "เพาะ" }
   ]
+  

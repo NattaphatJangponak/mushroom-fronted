@@ -1,78 +1,156 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
-import { useNavigate } from "react-router-dom";
 
 const FarmType = () => {
-  const [farmTypes, setFarmTypes] = useState([]);  
+  const [farms, setFarms] = useState([]); // เก็บข้อมูลฟาร์ม
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ type_id: "", type_name: "" });
+  const [form, setForm] = useState({ farm_id: "", farm_name: "", farm_type: "" , farm_description: "", farm_status: "inactive" });
   const [search, setSearch] = useState("");
 
-  const navigate = useNavigate();
-
-   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/farm_types.json");  
-        if (Array.isArray(response.data)) {
-          setFarmTypes(response.data);
+        const response = await axios.get("http://localhost:5000/api/farm"); // โหลด farms.json
+        if (Array.isArray(response.data.data)) {
+          setFarms(response.data.data);
+          console.log("Farms loaded:", response.data); // เช็คข้อมูลใน Console
         } else {
-          console.error("Error: farm_types.json is not an array", response.data);
-          setFarmTypes([]);
+          console.error("Error: farms.json is not an array", response.data);
+          setFarms([]);
         }
       } catch (error) {
-        console.error("Error fetching farm types:", error);
-        setFarmTypes([]);
+        console.error("Error fetching farms:", error);
+        setFarms([]);
       }
     };
     fetchData();
   }, []);
+
+
+  const handleAddEdit = async () => {
+    try {
+      if (!form.farm_name || !form.farm_type || !form.farm_description || !form.farm_status) {
+        alert("Please fill in all fields");
+        return;
+      }
   
-
-   
-  const handleAddEdit = () => {
-    setFarmTypes((prevFarmTypes) =>
-      form.type_id
-        ? prevFarmTypes.map((item) => (item.type_id === form.type_id ? form : item))
-        : [...prevFarmTypes, { ...form }]
-    );
-    closeModal();
+      if (form.farm_id) {
+        await axios.put(`http://localhost:5000/api/farm/${form.farm_id}`, form);
+      } else {
+        await axios.post("http://localhost:5000/api/farm", form);
+      }
+  
+      // โหลดข้อมูลใหม่หลังจากบันทึก
+      const response = await axios.get("http://localhost:5000/api/farm");
+  
+      // ตรวจสอบว่าข้อมูลที่ได้เป็นอาร์เรย์ก่อน setFarms
+      if (Array.isArray(response.data.data)) {
+        setFarms(response.data.data);
+      } else {
+        console.error("Error: Expected an array but got:", response.data);
+        setFarms([]); // ป้องกันข้อผิดพลาด
+      }
+  
+      closeModal();
+    } catch (error) {
+      console.error("Error saving device:", error.response ? error.response.data : error);
+    }
   };
+  
+ 
 
-   
+  // ✅ แก้ไขข้อมูลฟาร์ม
   const handleEdit = (item) => {
-    setForm(item);
+    if (!item || typeof item !== "object") {
+      console.error("Error: Invalid item selected for editing", item);
+      return;
+    }
+  
+    // ป้องกันค่า undefined ที่อาจทำให้เกิด error
+    setForm({
+      farm_id: item.farm_id || "", 
+      farm_name: item.farm_name || "",
+      farm_type: item.farm_type || "",
+      farm_description: item.farm_description || "", 
+      farm_status: item.farm_status === true ? "true" : "false",
+    });
+  
+    // ตรวจสอบค่า farms ก่อนเปิด modal
+    if (!Array.isArray(farms)) {
+      console.error("Error: farms is not an array", farms);
+      return;
+    }
+  
     setModal(true);
   };
-
-   const handleDelete = (type_id) => {
-    setFarmTypes((prevFarmTypes) => prevFarmTypes.filter((item) => item.type_id !== type_id));
+  
+  // ✅ ลบข้อมูลฟาร์ม
+  const handleDelete = async (farm_id) => {
+    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+      return; 
+    }
+  
+    try {
+      await axios.delete(`http://localhost:5000/api/farm/${farm_id}`); // เรียก API DELETE
+  
+      // อัปเดต State ให้ UI ลบรายการออกทันที
+      setFarms((prevFarms) => prevFarms.filter((item) => item.farm_id !== farm_id));
+  
+       
+    } catch (error) {
+      console.error("Error deleting farm:", error);
+      
+    }
   };
-
-   
+  
+  // ✅ ปิด Modal
   const closeModal = () => {
     setModal(false);
-    setForm({ type_id: "", type_name: "" });
+    setForm({ farm_id: "", farm_name: "", farm_type: "" , farm_description: "", farm_status: "inactive"  });
   };
 
-   
-  const filteredFarmTypes = farmTypes.filter(
-    ({ type_id, type_name }) =>
-      type_id.toLowerCase().includes(search.toLowerCase()) ||
-      type_name.toLowerCase().includes(search.toLowerCase())
+  // ✅ ฟิลเตอร์การค้นหา
+  const filteredFarms = farms.filter(
+    ({ farm_name, farm_type }) =>
+      farm_name.toLowerCase().includes(search.toLowerCase()) ||
+      farm_type.toLowerCase().includes(search.toLowerCase())
   );
 
-  return (
-    <div className="p-8 bg-gray-100 min-h-screen flex flex-col items-center">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6">Farm Type Management</h1>
 
-      
+
+  return (
+    
+    <div className="p-8 bg-gray-100 min-h-screen flex flex-col items-center">
+       <h1 className="text-3xl font-semibold text-gray-800 mb-6">Farm Management</h1>
+       {/* Right: Dashboard Cards */}
+      <div className=" pl-8 m-3">
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-blue-500 p-6 text-white rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold">Temperature</h3>
+            <p className="text-2xl font-bold">34.00°C</p>
+          </div>
+          <div className="bg-green-500 p-6 text-white rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold">Humidity</h3>
+            <p className="text-2xl font-bold">20.00%</p>
+          </div>
+          <div className="bg-yellow-500 p-6 text-white rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold">Air Pressure</h3>
+            <p className="text-2xl font-bold">1.00 mS/cm</p>
+          </div>
+          <div className="bg-red-500 p-6 text-white rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold">Online Devices</h3>
+            <p className="text-2xl font-bold">5</p>
+          </div>
+        </div>
+      </div>
+     
+
+      {/* 🔍 ค้นหาและเพิ่มข้อมูล */}
       <div className="flex gap-4 mb-6 w-full max-w-3xl items-center">
         <input
           type="text"
-          placeholder="Search by Type ID or Name"
+          placeholder="Search by Farm Name or Type"
           className="p-3 w-full border rounded-lg shadow-sm focus:ring focus:ring-blue-200"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -85,32 +163,41 @@ const FarmType = () => {
         </button>
       </div>
 
- 
+      {/* 📊 ตารางแสดงข้อมูลฟาร์ม */}
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-4">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Type ID</th>
-              <th className="p-3 text-left">Farm Type Name</th>
+              <th className="p-3 text-left">Farm ID</th>
+              <th className="p-3 text-left">Farm Name</th>
+              <th className="p-3 text-left">Farm Type</th>
+              <th className="p-3 text-left">Description</th>
+              <th className="p-3 text-left">Status</th>
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredFarmTypes.map(({ type_id, type_name }) => (
-              <tr key={type_id} className="border-t">
-                <td className="p-3">{type_id}</td>
-                <td className="p-3">{type_name}</td>
+            {filteredFarms.map(({ farm_id, farm_name, farm_type, farm_description, farm_status }) => (
+              <tr key={farm_id} className="border-t">
+                <td className="p-3">{farm_id}</td>
+                <td className="p-3">{farm_name}</td>
+                <td className="p-3">{farm_type}</td>
+                <td className="p-3">{farm_description}</td>
+                <td className="p-3">
+
+                {["true", "active", "1"].includes(String(farm_status).toLowerCase()) ? "Active" : "Inactive"}
+                </td>
                 <td className="p-3 text-center">
                   <div className="flex justify-center gap-2">
                     <button
                       className="bg-blue-500 text-white p-2 rounded-lg shadow hover:bg-blue-600 transition"
-                      onClick={() => handleEdit({ type_id, type_name })}
+                      onClick={() => handleEdit({ farm_id, farm_name, farm_type })}
                     >
                       <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                       className="bg-red-500 text-white p-2 rounded-lg shadow hover:bg-red-600 transition"
-                      onClick={() => handleDelete(type_id)}
+                      onClick={() => handleDelete(farm_id)}
                     >
                       <TrashIcon className="w-5 h-5" />
                     </button>
@@ -121,35 +208,59 @@ const FarmType = () => {
           </tbody>
         </table>
       </div>
-
-       
       {modal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
-                {form.type_id ? "Edit Farm Type" : "Add New Farm Type"}
+                {form.farm_id ? "Edit Farm" : "Add New Farm"}
               </h2>
               <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
                 <XIcon className="w-6 h-6" />
               </button>
             </div>
 
+            {/* ✅ Input: Farm Name */}
             <input
               type="text"
-              placeholder="Type ID"
+              placeholder="Farm Name"
               className="w-full p-2 border rounded mb-3"
-              value={form.type_id}
-              onChange={(e) => setForm({ ...form, type_id: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Farm Type Name"
-              className="w-full p-2 border rounded mb-3"
-              value={form.type_name}
-              onChange={(e) => setForm({ ...form, type_name: e.target.value })}
+              value={form.farm_name}
+              onChange={(e) => setForm({ ...form, farm_name: e.target.value })}
             />
 
+            {/* ✅ Dropdown: Farm Type (เฉพาะ "โรงเพาะ" และ "โรงปลูก") */}
+            <select
+              className="w-full p-2 border rounded mb-3"
+              value={form.farm_type}
+              onChange={(e) => setForm({ ...form, farm_type: e.target.value })}
+            >
+              <option value="">Select Farm Type</option>
+              <option value="โรงเพาะ">โรงเพาะ</option>
+              <option value="โรงปลูก">โรงปลูก</option>
+            </select>
+
+            {/* ✅ Input: Farm Description */}
+            <textarea
+              placeholder="Farm Description"
+              className="w-full p-2 border rounded mb-3"
+              rows="3"
+              value={form.farm_description}
+              onChange={(e) => setForm({ ...form, farm_description: e.target.value })}
+            />
+
+            {/* ✅ Dropdown: Farm Status (Active / Inactive) */}
+            <select
+              className="w-full p-2 border rounded mb-3"
+              value={form.farm_status}
+              onChange={(e) => setForm({ ...form, farm_status: e.target.value })}
+            >
+              <option value="">Select Status</option>
+              <option value={true}>Active</option>
+              <option value={false}>Inactive</option>
+            </select>
+
+            {/* ✅ Action Buttons */}
             <div className="flex justify-end gap-2">
               <button
                 onClick={closeModal}
@@ -161,12 +272,14 @@ const FarmType = () => {
                 onClick={handleAddEdit}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
-                {form.type_id ? "Update" : "Save"}
+                {form.farm_id ? "Update" : "Save"}
               </button>
             </div>
           </div>
         </div>
       )}
+
+
     </div>
   );
 };
