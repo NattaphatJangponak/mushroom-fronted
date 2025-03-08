@@ -229,12 +229,12 @@ const ViewGrowing = () => {
         <select className="p-3 border rounded-lg shadow-sm">
           <option value="">Filter by status</option>
         </select>
-        <button
+        {/* <button
           className="bg-green-500 text-white p-3 rounded-lg shadow-md"
           onClick={handleHarvestAll}
         >
           <GiFarmTractor className="w-5 h-5" />
-        </button>
+        </button> */}
         <button
           className="bg-blue-500 text-white p-3 rounded-lg shadow-md"
           onClick={() => setModal(true)}
@@ -252,7 +252,7 @@ const ViewGrowing = () => {
               <th className="p-3 text-left">Type</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-center">Image</th>
-              <th className="p-3 text-center">Harvest</th>
+              {/* <th className="p-3 text-center">Harvest</th> */}
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
@@ -271,14 +271,14 @@ const ViewGrowing = () => {
                     <FaEye className="w-5 h-5" />
                   </button>
                 </td>
-                <td className="p-3 text-center">
+                {/* <td className="p-3 text-center">
                   <button
                     className="bg-green-500 text-white p-2 rounded-lg"
                     onClick={() => handleHarvest(growing_pot_id)}
                   >
                     <GiFarmTractor className="w-5 h-5" />
                   </button>
-                </td>
+                </td> */}
                 <td className="p-3 text-center">
                   <div className="flex justify-center gap-2">
                     <button

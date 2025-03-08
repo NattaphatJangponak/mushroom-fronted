@@ -216,12 +216,12 @@ const closeImageModal = () => {
         <select className="p-3 border rounded-lg shadow-sm">
           <option value="">Filter by status</option>
         </select>
-        <button
+        {/* <button
           className="bg-green-500 text-white p-3 rounded-lg shadow-md"
           onClick={handleHarvestAll}
         >
           <GiFarmTractor className="w-5 h-5" />
-        </button>
+        </button> */}
         <button
           className="bg-blue-500 text-white p-3 rounded-lg shadow-md"
           onClick={() => setModal(true)}
@@ -239,12 +239,12 @@ const closeImageModal = () => {
               <th className="p-3 text-left">Type</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-center">Image</th>
-              <th className="p-3 text-center">Harvest</th>
+              {/* <th className="p-3 text-center">Harvest</th> */}
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {data && data.map(({ cultivation_pot_id, type_pot_id, status, pot_name }) => (
+            {data && data.map(({ cultivation_pot_id, typePot,type_pot_id, status, pot_name }) => (
               <tr key={cultivation_pot_id} className="border-t">
                 <td className="p-3">{cultivation_pot_id}</td>
                 <td className="p-3">{pot_name}</td>
@@ -258,14 +258,14 @@ const closeImageModal = () => {
                     <FaEye className="w-5 h-5" />
                   </button>
                 </td>
-                <td className="p-3 text-center">
+                {/* <td className="p-3 text-center">
                   <button
                     className="bg-green-500 text-white p-2 rounded-lg"
                     onClick={() => handleHarvest(cultivation_pot_id)}
                   >
                     <GiFarmTractor className="w-5 h-5" />
                   </button>
-                </td>
+                </td> */}
                 <td className="p-3 text-center">
                   <div className="flex justify-center gap-2">
                     <button
