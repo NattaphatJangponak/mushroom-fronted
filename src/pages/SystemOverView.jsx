@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState ,useContext} from 'react';
 import { useNavigate } from "react-router-dom";
 // import ChangeNameModal from "../components/ChangeNameModal";
 import FarmTypeModal from "../components/FarmTypeModal";
 import EditMushroomTypeModal from "../components/EditMushroomTypeModal";
+// import AuthContext from  '../context/AuthContext';
+import Navbar from '../components/Navbar';
 function SystemOverView() {
     const navigate = useNavigate();
     const [selectedFarm, setSelectedFarm] = useState("โรงปลูก 1");
@@ -13,12 +15,14 @@ function SystemOverView() {
         { id: "01", name: "โรงปลูก 1" },
         { id: "02", name: "โรงเพาะ 2" }
     ]);
+    // const { user } = useContext(AuthContext);
 
 
 
 
     return (
         <div>
+          {/* <Navbar user={user}/> */}
             <div className="bg-gray-100 py-6 min-h-screen">
                 <h2 className="text-4xl font-bold mx-10 my-4">SYSTEM OVERVIEW</h2>
                 <div className=" flex items-center justify-center">

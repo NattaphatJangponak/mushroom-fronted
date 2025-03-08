@@ -120,7 +120,9 @@ const Cultivation = () => {
 
   console.log(items)
   const handleDelete = async (id) => {
-
+    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+      return; 
+    }
     try {
       await axios.delete(`http://localhost:5000/api/cultivation/${id}`);
       setItems((prevItems) => prevItems.filter((item) => item.cultivation_id !== id));

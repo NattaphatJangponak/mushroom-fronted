@@ -117,7 +117,9 @@ const Growing = () => {
   };
 
   const handleDelete = async (id) => {
-
+    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+      return; 
+    }
     try {
       await axios.delete(`http://localhost:5000/api/growing/${id}`);
       setItems((prevItems) => prevItems.filter((item) => item.growing_id !== id));

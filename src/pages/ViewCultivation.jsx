@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
-import { GiFarmTractor } from "react-icons/gi";
+
 import { FaEye } from "react-icons/fa";
 import axios from "axios";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { useNavigate } from "react-router-dom";
 
-const ViewGrowing = () => {
+const ViewCultivation = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // const deviceId = searchParams.get("device_id");
   const [imageBase64, setImageBase64] = useState("");
-  const growingId = searchParams.get("growing_id");
+  const [selectedStatus, setSelectedStatus] = useState("All Status");
+
+
+  const cultivationId = searchParams.get("cultivation_id");
   const deviceName = searchParams.get("device_name");
+  const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [imageModal, setImageModal] = useState(false);
   const [modal, setModal] = useState(false);
+  const [typePotOptions, setTypePotOptions] = useState([]);
+
   const [form, setForm] = useState({
-    growing_pot_id: "",
+    cultivation_pot_id: "",
     type_pot_id: "",
     index: 1,
     img_path: "",
@@ -29,38 +34,28 @@ const ViewGrowing = () => {
 
 
   useEffect(() => {
-    if (!growingId) {
+    if (!cultivationId) {
       console.warn("⚠️ ไม่มีค่า device_id");
       return;
     }
     axios
-      .get(`http://localhost:5000/api/viewGrowing/${growingId}`)
+      .get(`http://localhost:5000/api/viewCultivation/${cultivationId}`)
       .then((response) => {
-        console.log("✅ ViewGrowing Data:", response);
         setData(response.data.data || []);
       })
       .catch((error) => console.error("❌ Error fetching data:", error));
-  }, [growingId]);
-
-  // useEffect(() => {
-  //   axios.get(`http://localhost:5000/api/viewGrowing/1`)
-  //     .then(response => {
-  //       setImageBase64(response.data.data[0].img_path);
-  //       console.log("🔹 Fetching data for growing_id:", response.data.data);
-  //     })
-  //     .catch(error => console.error("Error fetching image:", error));
-  // }, []);
+  }, [cultivationId]);
 
 
   const fetchData = async () => {
-    if (!growingId) {
-      console.warn("⚠️ ไม่มีค่า growing_id");
+    if (!cultivationId) {
+      console.warn("⚠️ ไม่มีค่า cultivation_id");
       return;
     }
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/viewGrowing/${String(growingId)}`);
-      console.log("✅ ViewGrowing Data:", response);
+      const response = await axios.get(`http://localhost:5000/api/viewCultivation/${String(cultivationId)}`);
+      console.log("✅ ViewCultivation Data:", response);
       setData(response.data.data || []);
     } catch (error) {
       console.error("❌ Error fetching data:", error);
@@ -68,8 +63,27 @@ const ViewGrowing = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [growingId]);
+    const fetchTypePots = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/mushroom"); // ✅ เปลี่ยนเป็น API `/api/mushroom`
+        console.log("✅ Type Pots Data:", response.data);
+
+        // ✅ ตรวจสอบว่า response.data.data เป็นอาร์เรย์ก่อน map()
+        if (Array.isArray(response.data.data)) {
+          setTypePotOptions(response.data.data);
+        } else {
+          console.error("⚠️ API response is not an array:", response.data);
+          setTypePotOptions([]);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching Type Pots:", error.response?.data || error.message);
+        setTypePotOptions([]);
+      }
+    };
+
+    fetchTypePots();
+  }, []);
+
 
 
 
@@ -80,7 +94,7 @@ const ViewGrowing = () => {
         return;
       }
 
-      if (!growingId) {
+      if (!cultivationId) {
         console.error("❌ cultivationId is null or undefined!");
         return;
       }
@@ -93,21 +107,19 @@ const ViewGrowing = () => {
         ai_result: form.ai_result || null, // ✅ ค่าเริ่มต้นเป็น `null`
         status: form.status, // ✅ สถานะของหม้อ
         pot_name: form.pot_name,
-        growing_id: Number(growingId)
+        cultivation_id: Number(cultivationId)
       };
-
-
 
       console.log("🔹 Data being sent:", data);
       let response;
 
-      if (form.growing_pot_id) {
+      if (form.cultivation_pot_id) {
         alert("🔹 Editing pot with ID:");
-        response = await axios.put(`http://localhost:5000/api/viewGrowing/${form.growing_pot_id}`, data);
+        response = await axios.put(`http://localhost:5000/api/viewCultivation/${form.cultivation_pot_id}`, data);
       } else {
         console.log("🔹 Adding new pot");
         alert("🔹 Adding new pot");
-        response = await axios.post("http://localhost:5000/api/viewGrowing", data);
+        response = await axios.post("http://localhost:5000/api/viewCultivation", data);
       }
 
       console.log("✅ API Response:", response.data);
@@ -121,15 +133,19 @@ const ViewGrowing = () => {
       console.error("❌ Error saving pot:", error.response?.data || error.message);
     }
   };
-  const handleDelete = async (growing_pot_id: number) => {
+
+  const handleDelete = async (cultivation_pot_id) => {
+    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+      return;
+    }
     try {
-      if (!growing_pot_id) {
-        console.error("❌ growing_pot_id is null or undefined!");
+      if (!cultivation_pot_id) {
+        console.error("❌ cultivation_pot_id is null or undefined!");
         return;
       }
 
-      console.log("🔹 Deleting pot with ID:", growing_pot_id);
-      const response = await axios.delete(`http://localhost:5000/api/viewGrowing/${growing_pot_id}`);
+      console.log("🔹 Deleting pot with ID:", cultivation_pot_id);
+      const response = await axios.delete(`http://localhost:5000/api/viewCultivation/${cultivation_pot_id}`);
 
       console.log("✅ API Response:", response.data);
       if (response.data.success === true) {
@@ -139,6 +155,20 @@ const ViewGrowing = () => {
       console.error("❌ Error deleting pot:", error.response?.data || error.message);
     }
   };
+  const filteredItems = data.filter(({ pot_name, typePot, status }) => {
+    const safePotName = pot_name ? pot_name.toLowerCase() : "";
+    const safeTypePot = typePot?.type_pot_name ? typePot.type_pot_name.toLowerCase() : "";
+    const safeStatus = status ? status.toLowerCase() : "";
+    const searchTerm = search.toLowerCase();
+
+    return (
+      (selectedStatus === "All Status" || safeStatus === selectedStatus.toLowerCase()) &&
+      (searchTerm === "" || safePotName.includes(searchTerm) || safeTypePot.includes(searchTerm))
+    );
+  });
+
+
+
 
 
   const handleHarvest = (potId) =>
@@ -146,46 +176,44 @@ const ViewGrowing = () => {
 
   const handleHarvestAll = () => console.log("Harvesting all pots");
 
-  const handleViewImage = async (growing_pot_id) => {
+
+
+  const handleViewImage = async (cultivation_pot_id) => {
     try {
-        console.log("🔹 Fetching image for growing_pot_id:", growing_pot_id);
+      console.log("🔹 Fetching image for cultivation_pot_id:", cultivation_pot_id);
 
-        // ตรวจสอบก่อนว่ามี growingId หรือไม่
-        if (!growingId) {
-            console.warn("⚠️ No growingId provided.");
-            return;
-        }
+      // ตรวจสอบก่อนว่ามี growingId หรือไม่
+      if (!cultivationId) {
+        console.warn("⚠️ No growingId provided.");
+        return;
+      }
 
-        // ใช้ API เดิม
-        const response = await axios.get(`http://localhost:5000/api/viewGrowing/${growingId}`);
+      // ใช้ API เดิม
+      const response = await axios.get(`http://localhost:5000/api/viewCultivation/${cultivationId}`);
 
-        if (response.data.success && Array.isArray(response.data.data)) {
-            // ค้นหา growing_pot_id ที่ต้องการ
-            const potData = response.data.data.find(pot => pot.growing_pot_id === growing_pot_id);
+      if (response.data.success && Array.isArray(response.data.data)) {
+        // ค้นหา growing_pot_id ที่ต้องการ
+        const potData = response.data.data.find(pot => pot.cultivation_pot_id === cultivation_pot_id);
 
-            if (potData && potData.img_path) {
-                console.log("✅ Image found, opening modal.");
-                setImageBase64(potData.img_path);
-                setImageModal(true);
-            } else {
-                console.warn("⚠️ No image found for this growing pot.");
-                setImageBase64(""); // เคลียร์ค่าเก่า
-                setImageModal(true); // เปิด modal ถึงแม้ไม่มีภาพ
-            }
+        if (potData && potData.img_path) {
+          console.log("✅ Image found, opening modal.");
+          setImageBase64(potData.img_path);
+          setImageModal(true);
         } else {
-            console.warn("⚠️ API response unsuccessful or data format incorrect.");
+          console.warn("⚠️ No image found for this growing pot.");
+          setImageBase64(""); // เคลียร์ค่าเก่า
+          setImageModal(true); // เปิด modal ถึงแม้ไม่มีภาพ
         }
+      } else {
+        console.warn("⚠️ API response unsuccessful or data format incorrect.");
+      }
     } catch (error) {
-        console.error("❌ Error fetching image:", error.message || error);
+      console.error("❌ Error fetching image:", error.message || error);
     }
-};
-
-
-
+  };
   const closeImageModal = () => {
     setImageModal(false);
   };
-
   // const handleDelete = (potId) => console.log(`Deleting pot with ID: ${potId}`);
 
   const handleEdit = (item) => {
@@ -196,7 +224,7 @@ const ViewGrowing = () => {
   const closeModal = () => {
     setModal(false);
     setForm({
-      growing_pot_id: '',
+      cultivation_pot_id: '',
       type_pot_id: "", // ✅ ประเภทของหม้อ
       index: 1, // ✅ ค่า default เป็น 1
       img_path: "", // ✅ ค่า default เป็น ""
@@ -215,7 +243,7 @@ const ViewGrowing = () => {
         >
           <ArrowLeftIcon className="w-6 h-6" />
         </button>
-        <h1 className="text-3xl font-semibold text-gray-800">
+        <h1 className="text-3xl font-semibo ld text-gray-800">
           Devices: {deviceName}
         </h1>
       </div>
@@ -223,11 +251,21 @@ const ViewGrowing = () => {
       <div className="flex gap-4 mb-6 w-full max-w-3xl items-center">
         <input
           type="text"
-          placeholder="Search by Pot id, and type"
+          placeholder="Search by Pot Name or Type"
           className="p-3 w-full border rounded-lg shadow-sm"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
-        <select className="p-3 border rounded-lg shadow-sm">
-          <option value="">Filter by status</option>
+
+        <select
+          className="p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-200"
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+        >
+          <option value="All Status">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="safe">Safe</option>
+          <option value="danger">Danger</option>
         </select>
         {/* <button
           className="bg-green-500 text-white p-3 rounded-lg shadow-md"
@@ -249,7 +287,8 @@ const ViewGrowing = () => {
             <tr className="bg-gray-200">
               <th className="p-3 text-left">Pot ID</th>
               <th className="p-3 text-left">Pot Name</th>
-              <th className="p-3 text-left">Type</th>
+              {/* <th className="p-3 text-left">Type</th> */}
+              <th className="p-3 text-left">Type Name</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-center">Image</th>
               {/* <th className="p-3 text-center">Harvest</th> */}
@@ -257,16 +296,17 @@ const ViewGrowing = () => {
             </tr>
           </thead>
           <tbody>
-            {data && data.map(({ growing_pot_id, type_pot_id, status, pot_name }) => (
-              <tr key={growing_pot_id} className="border-t">
-                <td className="p-3">{growing_pot_id}</td>
+            {data && filteredItems.map(({ cultivation_pot_id, typePot, type_pot_id, status, pot_name }) => (
+              <tr key={cultivation_pot_id} className="border-t">
+                <td className="p-3">{cultivation_pot_id}</td>
                 <td className="p-3">{pot_name}</td>
-                <td className="p-3">{type_pot_id}</td>
+                {/* <td className="p-3">{type_pot_id}</td> */}
+                <td className="p-3">{typePot?.type_pot_name || "N/A"}</td>
                 <td className="p-3">{status}</td>
                 <td className="p-3 text-center">
                   <button
                     className="bg-gray-500 text-white p-2 rounded-lg"
-                    onClick={() => handleViewImage(growing_pot_id)}
+                    onClick={() => handleViewImage(cultivation_pot_id)}
                   >
                     <FaEye className="w-5 h-5" />
                   </button>
@@ -274,7 +314,7 @@ const ViewGrowing = () => {
                 {/* <td className="p-3 text-center">
                   <button
                     className="bg-green-500 text-white p-2 rounded-lg"
-                    onClick={() => handleHarvest(growing_pot_id)}
+                    onClick={() => handleHarvest(cultivation_pot_id)}
                   >
                     <GiFarmTractor className="w-5 h-5" />
                   </button>
@@ -284,15 +324,14 @@ const ViewGrowing = () => {
                     <button
                       className="bg-blue-500 text-white p-2 rounded-lg"
                       onClick={() =>
-
-                        handleEdit({ growing_pot_id, type_pot_id, status, pot_name })
+                        handleEdit({ cultivation_pot_id, type_pot_id, status, pot_name })
                       }
                     >
                       <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                       className="bg-red-500 text-white p-2 rounded-lg"
-                      onClick={() => handleDelete(growing_pot_id)}
+                      onClick={() => handleDelete(cultivation_pot_id)}
                     >
                       <TrashIcon className="w-5 h-5" />
                     </button>
@@ -326,7 +365,7 @@ const ViewGrowing = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
-                {form.growing_pot_id ? "Edit Item" : "Add New Item"}
+                {form.cultivation_pot_id ? "Edit Item" : "Add New Item"}
               </h2>
               <button
                 onClick={closeModal}
@@ -339,27 +378,38 @@ const ViewGrowing = () => {
               disabled={true}
               className="w-full border p-2 mb-4"
               placeholder="Pot ID"
-              value={form.growing_pot_id ?? ""}
-              onChange={(e) => setForm({ ...form, growing_pot_id: e.target.value })}
+              value={form.cultivation_pot_id ?? ""} // ✅ ถ้า `id` เป็น `null` ให้ใช้ `""`
+              onChange={(e) => setForm({ ...form, cultivation_pot_id: e.target.value })}
             />
+
             <input
               className="w-full border p-2 mb-4"
               placeholder="Pot Name"
               value={form.pot_name ?? ""} // ✅ ถ้า `id` เป็น `null` ให้ใช้ `""`
               onChange={(e) => setForm({ ...form, pot_name: e.target.value })}
             />
+
+
             <select
-              className="w-full border p-2 mb-4"
-              value={form.type_pot_id}
-              onChange={(e) => setForm({ ...form, type_pot_id: e.target.value })}
+              className="w-full p-2 border rounded mb-3"
+              value={form.type_pot_id || ""}
+              onChange={(e) => {
+                const selectedPot = typePotOptions.find(pot => pot.type_pot_id === Number(e.target.value));
+                setForm({
+                  ...form,
+                  type_pot_id: selectedPot ? selectedPot.type_pot_id : "",
+                  type_pot_name: selectedPot ? selectedPot.type_pot_name : ""
+                });
+              }}
             >
-              <option value="" disabled>
-                Select Pot Type
-              </option>
-              <option value={11}>POM</option>
-              <option value={12}>OM</option>
-              <option value={13}>AM</option>
+              <option value="" disabled>Select Pot Type</option>
+              {typePotOptions.map(({ type_pot_id, type_pot_name }) => (
+                <option key={type_pot_id} value={type_pot_id}>
+                  {type_pot_name}
+                </option>
+              ))}
             </select>
+
             <select
               className="w-full border p-2 mb-4"
               value={form.status}
@@ -372,8 +422,6 @@ const ViewGrowing = () => {
               <option value="safe">Safe</option>
               <option value="danger">Danger</option>
             </select>
-
-
             <div className="flex justify-end gap-2">
               <button
                 className="bg-gray-300 px-4 py-2 rounded"
@@ -385,7 +433,7 @@ const ViewGrowing = () => {
                 className="bg-blue-500 text-white px-4 py-2 rounded"
                 onClick={handleAddEdit}
               >
-                {form.growing_pot_id ? "Update" : "Save"}
+                {form.cultivation_pot_id ? "Update" : "Save"}
               </button>
             </div>
           </div>
@@ -395,4 +443,4 @@ const ViewGrowing = () => {
   );
 };
 
-export default ViewGrowing;
+export default ViewCultivation;

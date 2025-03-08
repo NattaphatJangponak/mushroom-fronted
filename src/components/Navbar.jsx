@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState ,useContext} from "react";
 import ChangeNameModal from "../components/ChangeNameModal";
 import { useNavigate } from "react-router-dom";
-
+import AuthContext from '../context/AuthContext' ;
 const Navbar = () => {
   const navigate = useNavigate();
   const today = new Date();
@@ -15,16 +15,19 @@ const Navbar = () => {
 
   const [isChangeNameModalOpen, setIsChangeNameModalOpen] = useState(false);
   const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
+  const { user } = useContext(AuthContext);
 
   // ✅ fn Logout
   const handleLogout = () => {
-    localStorage.removeItem("userToken"); // Delete Token in Local Storage
+    localStorage.removeItem("token");
     navigate("/login"); // Redirect to Login
   };
 
   return (
     <nav className="nav-bar relative">
+        <h1>{user ?? 'test'}</h1>
       <div className="flex items-center">
+        
         <img
           src="/Image/mushroom.png"
           alt="App Mushroom IOT"
@@ -38,11 +41,11 @@ const Navbar = () => {
             HOMEPAGE
           </a>
         </li>
-        <li className="mx-2">
+        {/* <li className="mx-2">
           <a href="/systemOverview" className="nav-link">
             SYSTEM OVERVIEW
           </a>
-        </li>
+        </li> */}
 
         {/* <li className="mx-2">
           <a href="/rowselection" className="nav-link">
@@ -102,7 +105,7 @@ const Navbar = () => {
           <button
             className="hover:text-white-500 transition flex items-center "
           >
-            TYPEDATA 
+            TYPEDATA
             <svg
               className="w-3 h-3 fill-gray-50 group-hover:fill-black-500 transition"
               xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +171,10 @@ const Navbar = () => {
       {isChangeNameModalOpen && (
         <ChangeNameModal
           isOpen={isChangeNameModalOpen}
-          onClose={() => setIsChangeNameModalOpen(false)}
+          onClose={(
+            
+          ) => setIsChangeNameModalOpen(false)}
+         
         />
       )}
     </nav>

@@ -72,6 +72,9 @@ const Device = () => {
 
   // ✅ ลบข้อมูลอุปกรณ์
   const handleDelete = async (device_id) => {
+    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+      return; 
+    }
     try {
       await axios.delete(`http://localhost:5000/api/device/${device_id}`);
       setDevices((prevDevices) => prevDevices.filter((item) => item.device_id !== device_id));

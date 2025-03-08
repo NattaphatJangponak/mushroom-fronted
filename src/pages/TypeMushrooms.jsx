@@ -78,6 +78,10 @@ const PotType = () => {
 
     // ✅ ลบข้อมูล
     const handleDelete = async (type_pot_id) => {
+        if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบฟาร์มนี้?")) {
+            return; 
+          }
+        
         try {
             await axios.delete(`http://localhost:5000/api/mushroom/${type_pot_id}`);
             setPotTypes((prev) => prev.filter((item) => item.type_pot_id !== type_pot_id));

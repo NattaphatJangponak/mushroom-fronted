@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect ,useContext } from "react";
 import axios from "axios";
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
+ 
 
 const FarmType = () => {
   const [farms, setFarms] = useState([]); // เก็บข้อมูลฟาร์ม
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ farm_id: "", farm_name: "", farm_type: "" , farm_description: "", farm_status: "inactive" });
   const [search, setSearch] = useState("");
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,6 +124,7 @@ const FarmType = () => {
   return (
     
     <div className="p-8 bg-gray-100 min-h-screen flex flex-col items-center">
+           
        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Farm Management</h1>
        {/* Right: Dashboard Cards */}
       <div className=" pl-8 m-3">
