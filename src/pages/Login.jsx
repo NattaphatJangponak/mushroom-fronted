@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
     const navigate = useNavigate();
-    const { login } = useContext(AuthContext);
+    const { login, setUser } = useContext(AuthContext);
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -19,6 +19,7 @@ function Login() {
 
         const success = await login(username, password);
         if (success) {
+            setUser(username)
             navigate("/homepage");
         } else {
             alert("Login failed");

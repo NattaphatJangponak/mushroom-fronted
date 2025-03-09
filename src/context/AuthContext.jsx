@@ -7,28 +7,36 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    // Check if user is already logged in (decode token)
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token) {
-            try {
-                // Decode JWT to get user info
-                const decoded = jwtDecode(token);
-
-                // Check if token is expired
-                if (decoded.exp * 1000 < Date.now()) {
-                    logout(); // If expired, logout user
-                } else {
-                    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-                    setUser(decoded.username); // Store user info
-                }
-            } catch (error) {
-                logout(); // Logout if token is invalid
-            }
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            const decodedUser = JSON.parse(atob(token.split(".")[1])); // Decode JWT
+            setUser(decodedUser);
         }
     }, []);
 
-    // Login function
+    const updateUser = async (id, userData) => {
+        try {
+            console.log("📌 API Request - Updating user:", id, userData); // ✅ Debugging
+            const response = await axios.put(`http://localhost:5000/api/auth/update/${id}`, userData, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, // ✅ ใส่ Token
+            });
+
+            console.log("✅ User updated successfully:", response.data);
+
+            setUser(prevUser => ({
+                ...prevUser,
+                username: userData.username, // ✅ อัปเดต username ใน state
+            }));
+
+            return true;
+        } catch (error) {
+            console.error("❌ Error updating user:", error.response?.data || error.message);
+            return false;
+        }
+    };
+
     const login = async (username, password) => {
         try {
             const response = await axios.post("http://localhost:5000/api/auth/login", { username, password });
@@ -39,8 +47,8 @@ export const AuthProvider = ({ children }) => {
 
             // Decode token to get user data
             const decoded = jwtDecode(token);
-            
-            setUser({ id:decoded.id,username: decoded.username , password : decoded.password});
+
+            setUser({ id: decoded.id, username: decoded.username, password: decoded.password });
 
             return true;
         } catch (error) {
@@ -49,40 +57,6 @@ export const AuthProvider = ({ children }) => {
             return false;
         }
     };
-
-    const updateUser = async (id, userData) => {
-        try {
-            console.log("📌 API Request - Updating user:", id, userData); // ✅ Debugging
-            const response = await axios.put(`http://localhost:5000/api/auth/update/${id}`, userData);
-            console.log("✅ User updated successfully:", response.data);
-    
-            // ✅ อัปเดตข้อมูล user ใน state
-            setUser(prevUser => ({
-                ...prevUser,
-                username: userData.username, // ✅ อัปเดต username
-                password: userData.password  // ✅ อัปเดต password
-            }));
-    
-            return true;
-        } catch (error) {
-            console.error("❌ Error updating user:", error.response?.data || error.message);
-            return false;
-        }
-    };
-    
-  
-
-// const updateUser = async (id, userData) => {
-//     try {
-//         const response = await axios.put(`http://localhost:5000/api/user/update/${id}`, userData);
-//         console.log("User updated:", response.data);
-//         return true;
-//     } catch (error) {
-//         console.error("Error updating user:", error.response?.data || error.message);
-//         return false;
-//     }
-// };
-
 
     // Register function
     const register = async (username, password) => {
@@ -103,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout }}>
+        <AuthContext.Provider value={{ user, setUser, login, register, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

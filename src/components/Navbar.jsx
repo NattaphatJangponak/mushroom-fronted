@@ -15,17 +15,18 @@ const Navbar = () => {
 
   const [isChangeNameModalOpen, setIsChangeNameModalOpen] = useState(false);
   const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   // ✅ fn Logout
   const handleLogout = () => {
+    logout()
     localStorage.removeItem("token");
     navigate("/login"); // Redirect to Login
   };
 
   return (
     <nav className="nav-bar relative">
-        <h1>{user ?? 'test'}</h1>
+        {/* <h1>{user ?? 'test'}</h1> */}
       <div className="flex items-center">
         
         <img
